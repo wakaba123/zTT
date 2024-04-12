@@ -12,13 +12,18 @@ import math
 
 with warnings.catch_warnings():  
 	warnings.filterwarnings("ignore",category=FutureWarning)
-	from keras import backend as K
+	import tensorflow.compat.v1 as tf
+	tf.disable_v2_behavior()
+	tf.compat.v1.enable_eager_execution()
+	tf.enable_eager_execution()
+	# from keras import backend as K
+	from tensorflow.compat.v1.keras import backend as K
 	from collections import defaultdict
 	from keras.models import Sequential
 	from keras.optimizers import Adam
 	from keras.layers import Dense
 	from collections import deque
-	import tensorflow as tf
+	# import tensorflow as tf
 	import matplotlib.pyplot as plt
 	
 
@@ -119,6 +124,7 @@ class DQNAgent:
 		model.add(Dense(self.action_size, activation='linear', kernel_initializer='normal'))
 		model.summary()
 		model.compile(loss='mse', optimizer=Adam(lr=self.learning_rate))
+
 		return model
 	def update_target_model(self):
 		self.target_model.set_weights(self.model.get_weights())

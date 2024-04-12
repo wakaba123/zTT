@@ -16,6 +16,42 @@ from PowerLogger.powerlogger import PowerLogger
 from CPU.cpu import CPU
 from GPU.gpu import GPU
 
+import subprocess
+import re
+
+def execute(cmd):
+    cmds = [ 'su',cmd, 'exit']
+    obj = subprocess.Popen("adb shell", shell= True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    info = obj.communicate(("\n".join(cmds) + "\n").encode('utf-8'))
+    return info[0].decode('utf-8')
+
+
+def get_view():
+    focus_index = [3,6]
+    # focus_index= [4,8]
+    out = execute('dumpsys SurfaceFlinger | grep -i focus -A 10')
+    a = out.split('\n')
+    view = ""
+    for index in focus_index:
+        if a[index][-2] == '*':
+            view = a[index-2]
+            view = a[index-1]
+            break
+    view = view.strip()
+    print(f'current view:{view}')
+
+    out = execute('dumpsys SurfaceFlinger --list')
+    a = out.split('\n')
+    # pattern = r'SurfaceView\[com\.miHoYo\.Yuanshen\/com\..*?\.GetMobileInfo\.MainActivity\]\(BLAST\)#0'
+    escaped_text = re.escape(view)
+    pattern = escaped_text.replace(re.escape('[...]'), '.*?')
+    print(pattern)
+
+    result = re.findall(pattern, out)
+
+    print(f'current result is {result}')
+    return re.escape(result[0])
+
 
 if __name__=="__main__":
 
@@ -28,7 +64,6 @@ if __name__=="__main__":
 		--pixel_ip		Pixel device IP for connecting device via adb
 	'''
 	parser = argparse.ArgumentParser()
-	parser.add_argument('--app', type=str, required=True, choices=['showroom', 'skype', 'call'], help="Application name for learning")
 	parser.add_argument('--exp_time', type=int, default='300', help="Time steps for learning")
 	parser.add_argument('--server_ip', type=str, required=True, help="Agent server IP")
 	parser.add_argument('--server_port', type=int, default=8702, help="Agent server port number")
@@ -36,7 +71,6 @@ if __name__=="__main__":
 	parser.add_argument('--pixel_ip', type=str, required=True, help="Pixel device IP for connecting device via adb")
 
 	args = parser.parse_args()
-	app = args.app
 	experiment_time = args.exp_time
 	server_ip = args.server_ip
 	server_port = args.server_port
@@ -75,17 +109,8 @@ if __name__=="__main__":
 	c6.getCurrentClock()
 	g.getCurrentClock()
 
-	''' Create fps driver '''
-	if app == 'showroom':
-		view = "\"SurfaceView - com.android.chrome/com.google.android.apps.chrome.Main#0\""
-	elif app == 'skype':
-		view = "\"com.skype.raider/com.skype4life.MainActivity#0\""
-	elif app == 'call':
-		view = "\"SurfaceView - com.tencent.tmgp.kr.codm/com.tencent.tmgp.cod.CODMainActivity#0\""	
-	
-	#view = "\"SurfaceView - com.tencent.tmgp.kr.codm/com.tencent.tmgp.cod.CODMainActivity#0\""
-	# view = "\"com.skype.raider/com.skype4life.MainActivity#0\""
-	#view = "\"SurfaceView - com.android.chrome/org.chromium.chrome.browser.ChromeTabbedActivity#0\""
+	view = get_view()
+	print('current view is ',view)
 	
 	sf_fps_driver = SurfaceFlingerFPS(view, ip=pixel_ip)
 	
@@ -111,25 +136,29 @@ if __name__=="__main__":
 		if fps > 60:
 			fps = 60.0
 		fps_data.append(fps)
+		print(f'fps is {fps}')
 		
 		ts.append(t)
 
 		c0.collectdata()
 		c6.collectdata()
 		g.collectdata()
+		print('here after collect')
 		
 		c_p=int(pl.getPower()/100)
-		if c_p == 0:
-			continue
+		# if c_p == 0:
+		# 	continue
 		g_p=0
 		# time.sleep(3.7)
 		
 		c_t=float(c0.getCPUtemp())
 		g_t=float(g.getGPUtemp())
+
 		next_state=(c_c, g_c, c_p, g_p, c_t, g_t, fps)
 		
 		send_msg=str(c_c)+','+str(g_c)+','+str(c_p)+','+str(g_p)+','+str(c_t)+','+str(g_t)+','+str(fps)
 		client_socket.send(send_msg.encode())
+		print('here after send')
 		print('[{}] state:{} next_state:{} fps:{}'.format(t, state, next_state, fps))
 		state=next_state
 		# get action

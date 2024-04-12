@@ -1,6 +1,17 @@
+'''
+Author: wakaba blues243134@gmail.com
+Date: 2024-04-11 17:22:59
+LastEditors: wakaba blues243134@gmail.com
+LastEditTime: 2024-04-12 10:30:18
+FilePath: /zTT/Pixel_3a/GPU/gpu.py
+Description: 
+
+Copyright (c) 2024 by wakaba All Rights Reserved. 
+'''
 import subprocess
 
-gpu_clock_list=[180000000, 267000000, 355000000, 430000000]
+# gpu_clock_list=[180000000, 267000000, 355000000, 430000000]
+gpu_clock_list='257000000 414000000 596000000 710000000'.split()
 dir_thermal='/sys/devices/virtual/thermal'
 
 class GPU:
