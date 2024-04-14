@@ -145,7 +145,7 @@ if __name__=="__main__":
 		g.collectdata()
 		print('here after collect')
 		
-		c_p=int(pl.getPower()/100)
+		c_p=float(pl.getPower())
 		# if c_p == 0:
 		# 	continue
 		g_p=0

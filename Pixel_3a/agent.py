@@ -44,7 +44,7 @@ K.set_session(sess)
 
 class DQNAgent:
 	def __init__(self, state_size, action_size):
-		self.load_model = False
+		self.load_model = True
 		self.training=0
 		self.state_size=state_size
 		self.action_size=action_size
@@ -272,8 +272,8 @@ if __name__=="__main__":
 			g_t_prev=g_t
 			c_c=int(state_tmp[0])
 			g_c=int(state_tmp[1])
-			c_p=int(state_tmp[2])
-			g_p=int(state_tmp[3])
+			c_p=-1 * float(state_tmp[2])
+			g_p=float(state_tmp[3])
 			c_t=float(state_tmp[4])
 			g_t=float(state_tmp[5])
 			fps=float(state_tmp[6])
@@ -394,7 +394,7 @@ if __name__=="__main__":
 			if t%60 == 0:
 				agent.learning_rate=0.1
 				print('[Reset learning_rate]')
-			if t%500 == 0:
+			if t%100 == 0:
 				agent.model.save_weights("./save_model/model.h5")
 				print("[Save model]")
 			if t==experiment_time:

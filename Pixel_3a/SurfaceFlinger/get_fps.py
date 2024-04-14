@@ -16,7 +16,7 @@ class SurfaceFlingerFPS():
         self.fps = 0
         
     def __init_frame_data__(self, view):
-        out = subprocess.check_output(['adb', '-s', self.ip, 'shell', 'dumpsys', 'SurfaceFlinger', '--latency-clear', view])
+        out = subprocess.check_output(['adb', '-s', self.ip, 'shell', 'dumpsys', 'SurfaceFlinger', '--latency-clear'])
         out = out.decode('utf-8')
         if out.strip() != '':
             raise RuntimeError("Not supported.")
@@ -69,6 +69,7 @@ class SurfaceFlingerFPS():
         if self.timestamps:
                 self.recent_timestamp = self.timestamps[-2]
                 self.last_index = tss.index(self.recent_timestamp)
+               
         self.timestamps = self.timestamps[:-2] + tss[self.last_index:]
         #time.sleep(1)
         
