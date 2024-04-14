@@ -36,6 +36,8 @@ class PowerLogger:
 		return time.clock_gettime(time.CLOCK_REALTIME)
 
 	def getPower(self):
+		self.getCurrent()
+		self.getVoltage()
 		self.power = self.voltage * self.current
 		self.power_data.append(self.power)
 		return self.power
@@ -55,7 +57,8 @@ class PowerLogger:
 		return current * voltage
 
 	def getVoltage(self):
-		self.voltage = execute('cat /sys/class/power_supply/battery/voltage_now')
+		self.voltage = int(execute('cat /sys/class/power_supply/battery/voltage_now')) / 1000000
+		print(self.voltage)
 		return self.voltage
 
 		self.engine.startSampling(1)
@@ -66,7 +69,8 @@ class PowerLogger:
 		return voltage
 
 	def getCurrent(self):
-		self.current = execute('cat /sys/class/power_supply/battery/current_now')
+		self.current = int(execute('cat /sys/class/power_supply/battery/current_now')) / 1000000
+		print(self.current)
 		return self.current
 
 		self.engine.startSampling(1)
