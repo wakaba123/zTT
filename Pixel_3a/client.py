@@ -34,7 +34,7 @@ def get_view():
     view = ""
     for index in focus_index:
         if a[index][-2] == '*':
-            view = a[index-2]
+            # view = a[index-3]
             view = a[index-1]
             break
     view = view.strip()
@@ -45,7 +45,6 @@ def get_view():
     # pattern = r'SurfaceView\[com\.miHoYo\.Yuanshen\/com\..*?\.GetMobileInfo\.MainActivity\]\(BLAST\)#0'
     escaped_text = re.escape(view)
     pattern = escaped_text.replace(re.escape('[...]'), '.*?')
-    print(pattern)
 
     result = re.findall(pattern, out)
 
@@ -100,9 +99,9 @@ if __name__=="__main__":
 	g.setUserspace()
 
 	''' Set CPU and GPU clock to maximum before starting '''
-	c0.setCPUclock(8)
-	c6.setCPUclock(8)
-	g.setGPUclock(3)
+	c0.setCPUclock(-1)
+	c6.setCPUclock(-1)
+	g.setGPUclock(-1)
 
 	''' Check whether setting clocks is properly or not '''
 	c0.getCurrentClock()
@@ -121,7 +120,7 @@ if __name__=="__main__":
 		c_t -> CPU temperature
 		g_t -> GPU temperature
 	'''
-	c_c=8
+	c_c=7
 	g_c=3
 	c_t=float(c0.getCPUtemp())
 	g_t=float(g.getGPUtemp())
@@ -165,6 +164,7 @@ if __name__=="__main__":
 		recv_msg=client_socket.recv(8702).decode()
 		clk=recv_msg.split(',')
 
+		print('here clk',clk)
 		c_c=int(clk[0])
 		g_c=int(clk[1])
 

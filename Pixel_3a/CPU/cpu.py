@@ -1,8 +1,10 @@
 import subprocess
 
-little_cpu_clock_list = "300000 825600 902400 1056000 1132800 1228800 1324800 1420800 1516800".split()
-big_cpu_clock_list = "825600 1056000 1363200 1536000 1766400 1996800 2092800 2323200 2553600 2649600".split()
+little_cpu_clock_list = "825600 1209600 1536000 1843200 2169600 2476800".split()
+big_cpu_clock_list = "576000 902400 1228800 1420800 1612800 1766400".split()
 dir_thermal='/sys/devices/virtual/thermal'
+
+flag = 0
 
 class CPU:
 	def __init__(self,idx,cpu_type,ip):
@@ -13,12 +15,12 @@ class CPU:
 		self.temp_data=[]
 
 		if self.cpu_type == 'b':
-			self.max_freq = 9
-			self.clk = 9
+			self.max_freq = len(big_cpu_clock_list) - 1
+			self.clk = len(big_cpu_clock_list) - 1
 			self.cpu_clock_list = big_cpu_clock_list
 		elif self.cpu_type == 'l':
-			self.max_freq = 8
-			self.clk = 8
+			self.max_freq =  len(little_cpu_clock_list) - 1 
+			self.clk = len(little_cpu_clock_list) - 1 
 			self.cpu_clock_list = little_cpu_clock_list
 		
 
@@ -26,8 +28,11 @@ class CPU:
 		subprocess.check_output(['adb', '-s', self.ip, 'shell', 'su -c', '\"echo', str(self.cpu_clock_list[self.max_freq])+" >", fname+"\""])
 		fname='/sys/devices/system/cpu/cpu%s/cpufreq/scaling_min_freq' %(self.idx)
 		subprocess.check_output(['adb', '-s', self.ip, 'shell', 'su -c', '\"echo', str(self.cpu_clock_list[0])+" >", fname+"\""])		
-		
+
 	def setCPUclock(self,i):
+		if flag:
+			return 0
+		i = min(i , len(self.cpu_clock_list) - 1)
 		self.clk=i
 		fname='/sys/devices/system/cpu/cpu%s/cpufreq/scaling_setspeed' %(self.idx)
 		subprocess.check_output(['adb', '-s', self.ip, 'shell', 'su -c', '\"echo', str(self.cpu_clock_list[i])+" >", fname+"\""])
@@ -82,6 +87,8 @@ class CPU:
 				print('[cpu{}]{}KHz '.format(i,output),end=""),
 
 	def setUserspace(self):
+		if flag:
+			return 0
 		if self.cpu_type == 'l':
 			for i in range(0,6):
 				fname='/sys/devices/system/cpu/cpu%s/cpufreq/scaling_governor' %(i)
@@ -95,6 +102,8 @@ class CPU:
 				print('[cpu{}]Set userspace '.format(i),end="")
 
 	def setdefault(self, mode):
+		if flag:
+			return 0
 		if self.cpu_type == 'l':
 			for i in range(0,6):
 				fname='/sys/devices/system/cpu/cpu%s/cpufreq/scaling_governor' %(i)

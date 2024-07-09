@@ -13,6 +13,7 @@ import subprocess
 # gpu_clock_list=[180000000, 267000000, 355000000, 430000000]
 gpu_clock_list='257000000 414000000 596000000 710000000'.split()
 dir_thermal='/sys/devices/virtual/thermal'
+flag = 1
 
 class GPU:
     def __init__(self,ip):
@@ -20,6 +21,9 @@ class GPU:
         self.clock_data=[]
         self.temp_data=[]
         self.ip = ip
+
+        if flag:
+            return
         
         fname='/sys/class/kgsl/kgsl-3d0/devfreq/max_freq'
         subprocess.check_output(['adb', '-s', self.ip, 'shell', 'su -c', '\"echo', str(gpu_clock_list[3])+" >", fname+"\""])
@@ -27,6 +31,8 @@ class GPU:
         subprocess.check_output(['adb', '-s', self.ip, 'shell', 'su -c', '\"echo', str(gpu_clock_list[0])+" >", fname+"\""])
 		
     def setGPUclock(self,i):
+        if flag:
+            return 0
         self.clk=i
         fname='/sys/class/kgsl/kgsl-3d0/devfreq/userspace/set_freq'
         subprocess.check_output(['adb', '-s', self.ip, 'shell', 'su -c', '\"echo', str(gpu_clock_list[i])+" >", fname+"\""])
@@ -50,11 +56,15 @@ class GPU:
         self.temp_data.append(self.getGPUtemp())
 
     def setUserspace(self):
+        if flag:
+            return 0
         fname='/sys/class/kgsl/kgsl-3d0/devfreq/governor'
         subprocess.check_output(['adb', '-s', self.ip, 'shell',  'su -c', '\"echo userspace >', fname+"\""])
         print('[gpu]Set userspace')
     
     def setdefault(self):
+        if flag:
+            return 0
         fname='/sys/class/kgsl/kgsl-3d0/devfreq/governor'
         subprocess.check_output(['adb', '-s', self.ip, 'shell',  'su -c', '\"echo msm-adreno-tz >', fname+"\""])
         print('[gpu]Set msm-adreno-tz')
