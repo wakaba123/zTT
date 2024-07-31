@@ -1,3 +1,5 @@
+import subprocess
+import re
 import time
 import argparse
 import subprocess
@@ -14,18 +16,18 @@ def execute(cmd):
 
 class SurfaceFlingerFPS():
     
-    def __init__(self, view, ip):
+    def __init__(self, view,):
         self.view = view
-        self.ip = ip
         self.refresh_period, self.base_timestamp, self.timestamps = self.__init_frame_data__(self.view)
         self.recent_timestamps = self.timestamps[-2]
         self.fps = 0
         
     def __init_frame_data__(self, view):
-        out = subprocess.check_output(['adb', '-s', self.ip, 'shell', 'dumpsys', 'SurfaceFlinger', '--latency-clear'])
+        out = subprocess.check_output(['adb', 'shell', 'dumpsys', 'SurfaceFlinger', '--latency-clear'])
         out = out.decode('utf-8')
         if out.strip() != '':
             raise RuntimeError("Not supported.")
+            time.sleep(0.1)
         (refresh_period, timestamps) = self.__frame_data__(view)
         base_timestamp = 0
         base_index = 0
@@ -101,3 +103,43 @@ class SurfaceFlingerFPS():
     def getFPS(self):
         self.collect_frame_data(self.view)
         return self.fps
+
+def execute(cmd):
+    cmds = [ 'su',cmd, 'exit']
+    obj = subprocess.Popen("adb shell", shell= True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    info = obj.communicate(("\n".join(cmds) + "\n").encode('utf-8'))
+    return info[0].decode('utf-8')
+
+
+def get_view():
+    focus_index = [3,6]
+    # focus_index= [4,8]
+    out = execute('dumpsys SurfaceFlinger | grep -i focus -A 10')
+    a = out.split('\n')
+    view = ""
+    for index in focus_index:
+        if a[index][-2] == '*':
+            # view = a[index-3]
+            view = a[index-1]
+            break
+    view = view.strip()
+    print(f'current view:{view}')
+
+    out = execute('dumpsys SurfaceFlinger --list')
+    a = out.split('\n')
+    # pattern = r'SurfaceView\[com\.miHoYo\.Yuanshen\/com\..*?\.GetMobileInfo\.MainActivity\]\(BLAST\)#0'
+    escaped_text = re.escape(view)
+    pattern = escaped_text.replace(re.escape('[...]'), '.*?')
+
+    result = re.findall(pattern, out)
+
+    print(f'current result is {result}')
+    return re.escape(result[0])
+
+view = get_view()
+print('current view is ',view)
+sf_fps_driver = SurfaceFlingerFPS(view)
+while True:
+    fps = float(sf_fps_driver.getFPS())
+    print(fps)
+    time.sleep(1)

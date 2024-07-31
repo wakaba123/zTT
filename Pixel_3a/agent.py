@@ -28,12 +28,12 @@ with warnings.catch_warnings():
     
 
 PORT = 8702
-experiment_time=1000#14100
+experiment_time=10000#14100
 clock_change_time=30
 cpu_power_limit=1000
 gpu_power_limit=1600
 action_space=9
-target_fps=60
+target_fps=25
 target_temp=65
 beta=2 #4
 
@@ -79,7 +79,7 @@ class DQNAgent:
         self.target_model = self.build_model()
         self.update_target_model()
         if self.load_model:
-            self.model.load_weights("./save_model/model.h5")
+            self.model.load_weights("./save_model/bili_500.h5")
             self.epsilon_start = 0.1
         
 #    def get_flops(model):
@@ -401,12 +401,12 @@ if __name__=="__main__":
     finally:
         server_socket.close()
     print(reward_tmp)
-    ts = range(0, len(avg_q_max_data))
-    plt.figure(1)
-    plt.xlabel('time')
-    plt.ylabel('Avg Q-max')
-    plt.grid(True)
-    plt.plot(ts,avg_q_max_data, label='avg_q_max')
-    plt.legend(loc='upper left')
-    plt.title('Average max-Q')
-    plt.show()
+    # ts = range(0, len(avg_q_max_data))
+    # plt.figure(1)
+    # plt.xlabel('time')
+    # plt.ylabel('Avg Q-max')
+    # plt.grid(True)
+    # plt.plot(ts,avg_q_max_data, label='avg_q_max')
+    # plt.legend(loc='upper left')
+    # plt.title('Average max-Q')
+    # plt.show()

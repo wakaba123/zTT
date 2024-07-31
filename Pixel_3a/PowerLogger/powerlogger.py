@@ -69,7 +69,7 @@ class PowerLogger: # 上面的PowerLogger是原生的powerlogger, 但是我们�
 
 	def getPower(self):
 		voltage = int(execute('cat /sys/class/power_supply/battery/voltage_now')) / 1e6
-		current = -1 * int(execute('cat /sys/class/power_supply/battery/current_now')) / 1e6
+		current = int(execute('cat /sys/class/power_supply/battery/current_now')) / 1e6
 		print('voltage and current is {}, {}'.format(  voltage,current))
 		self.power = current * voltage
 		self.power_data.append(self.power)
